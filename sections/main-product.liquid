@@ -407,6 +407,9 @@
                     {% render 'icon-plus' %}
                   </button>
                 </quantity-input>
+                <div id="total-price-container">
+                  Your total: <span id="total-price">{{ product.price | money }}</span>
+                </div>
               </div>
             {%- when 'popup' -%}
               <modal-opener
@@ -479,21 +482,22 @@
                   >
                     {%- for option in product.options_with_values -%}
                       <fieldset class="js product-form__input">
-                        <legend class="form__label">{{ option.name }}</legend>
-                        {%- for value in option.values -%}
-                          <input
-                            type="radio"
-                            id="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
-                            name="{{ option.name }}"
-                            value="{{ value | escape }}"
-                            form="{{ product_form_id }}"
-                            {% if option.selected_value == value %}
-                              checked
-                            {% endif %}
-                          >
-                          <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}">
-                            {{ value }}
-                          </label>
+                        <legend class="form__label">{{ option.name }}: <span id="selected-flavor">None</span></legend>
+                        {%- for variant in product.variants -%}
+                          {%- if variant.featured_image -%}
+                            <input
+                              type="radio"
+                              id="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
+                              name="{{ option.name }}"
+                              value="{{ variant.title | escape }}"
+                              form="{{ product_form_id }}"
+                              {% if variant.selected %} checked {% endif %}
+                            >
+                            <label style="background-image: url('{{ variant.featured_image.src | img_url: '75x75' }}');" 
+                                  for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}">
+              
+                            </label>
+                          {%- endif -%}
                         {%- endfor -%}
                       </fieldset>
                     {%- endfor -%}
@@ -535,14 +539,12 @@
                         </div>
                       </div>
                     {%- endfor -%}
-
                     <script type="application/json">
                       {{ product.variants | json }}
                     </script>
                   </variant-selects>
                 {%- endif -%}
               {%- endunless -%}
-
               <noscript class="product-form__noscript-wrapper-{{ section.id }}">
                 <div class="product-form__input{% if product.has_only_default_variant %} hidden{% endif %}">
                   <label class="form__label" for="Variants-{{ section.id }}">
@@ -1105,7 +1107,59 @@
       });
     });
   </script>
-
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      var quantityInput = document.getElementById('Quantity-{{ section.id }}');
+      var totalPriceContainer = document.getElementById('total-price');
+      var productPrice = {{ product.price }};
+  
+      function updateTotalPrice() {
+        var quantity = parseInt(quantityInput.value);
+        var totalPrice = productPrice * quantity;
+        totalPriceContainer.textContent = (totalPrice / 100).toLocaleString('en-US', { style: 'currency', currency: '{{ shop.currency }}' });
+      }
+  
+      quantityInput.addEventListener('change', updateTotalPrice);
+      quantityInput.addEventListener('input', updateTotalPrice);
+  
+      document.querySelector('button[name="plus"]').addEventListener('click', function() {
+        quantityInput.value = parseInt(quantityInput.value);
+        updateTotalPrice();
+      });
+  
+      document.querySelector('button[name="minus"]').addEventListener('click', function() {
+        if (parseInt(quantityInput.value) > 1) {
+          quantityInput.value = parseInt(quantityInput.value);
+          updateTotalPrice();
+        }
+      });
+  
+      updateTotalPrice();
+    });
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Function to update the selected flavor display
+      function updateSelectedFlavor(flavor) {
+        var selectedFlavorContainer = document.getElementById('selected-flavor');
+        selectedFlavorContainer.textContent = flavor;
+      }
+  
+      // Initial call to set the default selected flavor if one is already selected
+      var selectedRadio = document.querySelector('input[name="Flavor"]:checked');
+      if (selectedRadio) {
+        updateSelectedFlavor(selectedRadio.value);
+      }
+  
+      // Event listeners for flavor change
+      var flavorRadios = document.querySelectorAll('input[name="Flavor"]');
+      flavorRadios.forEach(function(radio) {
+        radio.addEventListener('change', function() {
+          updateSelectedFlavor(this.value);
+        });
+      });
+    });
+  </script>
   {%- liquid
     if product.selected_or_first_available_variant.featured_media
       assign seo_media = product.selected_or_first_available_variant.featured_media
@@ -1890,7 +1944,7 @@
           "label": "t:sections.main-product.settings.mobile_thumbnails.options__3.label"
         }
       ],
-      "default": "hide",
+      "default": "show",
       "label": "t:sections.main-product.settings.mobile_thumbnails.label"
     },
     {

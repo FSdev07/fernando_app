@@ -57,14 +57,14 @@
 
 @media screen and (min-width: 990px) {
   .product--large:not(.product--no-media) .product__media-wrapper {
-    max-width: 65%;
-    width: calc(65% - var(--grid-desktop-horizontal-spacing) / 2);
+    max-width: 35%;
+    width: calc(35% - var(--grid-desktop-horizontal-spacing) / 2);
   }
 
   .product--large:not(.product--no-media) .product__info-wrapper {
     padding: 0 0 0 4rem;
-    max-width: 35%;
-    width: calc(35% - var(--grid-desktop-horizontal-spacing) / 2);
+    max-width: 60%;
+    width: calc(60% - var(--grid-desktop-horizontal-spacing) / 2);
   }
 
   .product--large:not(.product--no-media).product--right .product__info-wrapper {
@@ -196,13 +196,14 @@ fieldset.product-form__input .form__label {
 
 .product-form__input input[type='radio'] + label {
   border: var(--variant-pills-border-width) solid rgba(var(--color-foreground), var(--variant-pills-border-opacity));
-  background-color: rgb(var(--color-background));
+  /* background-color: rgb(var(--color-background)); */
   color: rgba(var(--color-foreground));
-  border-radius: var(--variant-pills-radius);
+  border-radius: 100%;
   color: rgb(var(--color-foreground));
   display: inline-block;
   margin: 0.7rem 0.5rem 0.2rem 0;
-  padding: 1rem 2rem;
+  width: 79px;
+  height: 79px;
   font-size: 1.4rem;
   letter-spacing: 0.1rem;
   line-height: 1;
@@ -231,6 +232,20 @@ fieldset.product-form__input .form__label {
 .product-form__input input[type='radio']:checked + label {
   background-color: rgb(var(--color-foreground));
   color: rgb(var(--color-background));
+  position:relative
+}
+.product-form__input input[type=radio]:checked + label::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -12px;
+  transform: rotate(62deg);
+  width: 50px;
+  height: 25px;
+  z-index: 1;
+  background-color: rgb(var(--color-background));
+  border-radius: 50%;
+  clip-path: polygon(0% 0%, 20% 30%, 40% 0%, 60% 30%, 80% 0%, 100% 30%, 100% 100%, 0% 100%);
 }
 
 @media screen and (forced-colors: active) {
